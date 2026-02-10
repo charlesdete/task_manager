@@ -47,7 +47,8 @@ urlpatterns = [
     path("api/task/", include("task.urls")),
     path("api/department/", include("department.urls")),
     path("api/notification/", include("notification.urls")),
-
+    path("api/users/", include("users.urls")),
+    path("api/file/", include("file.urls")),
     # Swagger / Redoc UIs
     path("api/swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
