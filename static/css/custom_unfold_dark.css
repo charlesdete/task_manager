@@ -1,0 +1,72 @@
+/* Navbar background and text color */
+#header {
+  background-color: #1F2937; /* Dark slate gray */
+  color: #0d7398;            /* Light text */
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Site name link */
+#branding #site-name a {
+  color: #7C3AED;            /* Purple accent */
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.25rem;
+}
+
+/* Site name link hover */
+#branding #site-name a:hover {
+  color: #A78BFA;            /* Lighter purple */
+}
+
+/* User tools text */
+#user-tools {
+  color: #D1D5DB;            /* Light gray */
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Links inside user-tools */
+#user-tools a {
+  color: #A78BFA;            /* Light purple */
+  text-decoration: none;
+}
+
+/* Links hover */
+#user-tools a:hover {
+  color: #C4B5FD;            /* Lighter purple */
+  text-decoration: underline;
+}
+
+/* Logout button style */
+#logout-form button {
+  background: transparent;
+  border: none;
+  color: #A78BFA;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+#logout-form button:hover {
+  color: #C4B5FD;
+  text-decoration: underline;
+}
+
+/* Theme toggle button */
+button.theme-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #A78BFA;
+  padding: 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+button.theme-toggle:hover {
+  color: #C4B5FD;
+}
