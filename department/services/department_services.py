@@ -6,15 +6,22 @@ from ..serializer import DepartmentSerializer
 class Department_services(ServiceBase):
     
     manager = Department.objects
+    
     @staticmethod
     def createDepartment(data):
-        serializer = DepartmentSerializer(data = data)
+        serializer = DepartmentSerializer(data=data)
         if serializer.is_valid():
-          new_created_department = ServiceBase.create(**serializer)
-          department = new_created_department.save()
-          return{'success':True, 'department':department, 'error':None }
-        return{'success':False, 'department':None, 'error':serializer.errors}
-
+            dept = serializer.save()
+            return {
+                'success': True,
+                'department': DepartmentSerializer(dept).data,
+                'error': None
+            }
+        return {
+            'success': False,
+            'department': None,
+            'error': serializer.errors
+        }
 
     @staticmethod
     def updateDepartment(department_id,data):
@@ -65,11 +72,7 @@ class Department_services(ServiceBase):
        return {'success':True,'departments':serializer, 'errors':None}
 
     @staticmethod
-    def filter_departments(filters):
-       """
-        filters: dict of field lookups, e.g. {"status": "open"} or {"title__icontains": "API"}
-        """
-
-       departments = ServiceBase.filter(**filters)
-       serializer = DepartmentSerializer(departments, many= True).data
-       return {'success':True,'departments':serializer, 'errors':None}
+    def filter_departments(filters=None):
+        if filters is None:
+            filters = {}
+        return Department.objects.filter(**filters)

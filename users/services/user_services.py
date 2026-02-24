@@ -4,6 +4,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from base.services import ServiceBase
 from ..models import User
 from rest_framework.response import Response
+from tokens.services.token_services import TokenServices
+from django.utils import timezone
 
 
 class UserService(ServiceBase):
@@ -27,7 +29,7 @@ class UserService(ServiceBase):
         if user is None:
             return {"success": False, "errors": {"error": "Invalid credentials"}}
 
-        refresh = RefreshToken.for_user(user)
+        refresh = TokenServices.create(user)
         serializer = UserSerializer(user)
 
         return {
@@ -39,21 +41,48 @@ class UserService(ServiceBase):
             },
         }
     
+    
     @staticmethod
     def token_refresh_logic(refresh_token_str):
         try:
             refresh_token = RefreshToken(refresh_token_str)
             new_access = str(refresh_token.access_token)
-            return {"success": True, "data": {"access": new_access}, "errors": None}
+
+            # Optional: update DB record
+            token_record = TokenServices.get(refresh_key=refresh_token_str)
+            if token_record:
+                TokenServices.update(
+                    token_record,
+                    key=new_access,
+                    refreshed_at=timezone.now(),
+                    expires_at=timezone.now() + timezone.timedelta(minutes=15),
+                )
+
+            return {
+                "success": True,
+                "data": {
+                    "access": new_access,
+                    "expires_at": timezone.now() + timezone.timedelta(minutes=15),
+                },
+                "errors": None,
+            }
         except TokenError:
-            return {"success": False, "data": None, "errors": {"detail": "Invalid or expired refresh token"}}
- 
+            return {
+                "success": False,
+                "data": None,
+                "errors": {"detail": "Invalid or expired refresh token"},
+            }
+   
+
 
     @staticmethod
     def signout_user(refresh_token):
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return {"success": True, "errors": None}
-        except TokenError:
-            return {"success": False, "errors": {"detail": "Invalid or expired token"}}
+            try:
+               
+                token_record = TokenServices.get(refresh_key=refresh_token)
+                if token_record:
+                    TokenServices.update(token_record, revoked=True)
+
+                return {"success": True, "message": "User signed out successfully"}
+            except TokenError:
+                return {"success": False, "errors": {"detail": "Invalid or expired token"}}

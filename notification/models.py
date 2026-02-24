@@ -15,15 +15,16 @@ class Notification(GenericBaseModel):
     )
 
     title = models.CharField(max_length=255)
-    message = models.TextField()
+    message = models.CharField(max_length=255)
 
-    notification_type = models.ForeignKey(State, on_delete=models.CASCADE
+    notification_type = models.ForeignKey(State, on_delete=models.CASCADE,blank=True
     )
 
     state = models.ForeignKey(
         State,
         on_delete=models.CASCADE,
-        related_name="notifications_by_state"
+        related_name="notifications_state",
+        blank=True
     )
 
     is_read = models.BooleanField(default=False)

@@ -1,6 +1,6 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status,permissions
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from .serializer import NotificationSerializer
 from .models import Notification
 from .services.notification_services import Notification_services
@@ -9,7 +9,7 @@ from .services.notification_services import Notification_services
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all() 
     serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         result = Notification_services.createNotification(request.data)
@@ -36,5 +36,6 @@ class NotificationViewSet(viewsets.ModelViewSet):
         return Response(result, status=status.HTTP_404_NOT_FOUND)
 
     def list(self, request, *args, **kwargs):
-        result = Notification_services.filter_notifications()
-        return Response(result, status=status.HTTP_200_OK)
+        filters = request.query_params.dict()  # convert query params to dict
+        result = Notification_services.filter_notifications(filters)
+        return Response(result)

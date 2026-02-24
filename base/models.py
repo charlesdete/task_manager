@@ -31,7 +31,3 @@ class State(GenericBaseModel):
         verbose_name= 'State'
         verbose_name_plural = 'States'
 
-class task_identity_type(GenericBaseModel):
-    
-    def __str__(self):
-        return self.name

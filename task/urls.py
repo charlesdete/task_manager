@@ -6,7 +6,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 router = DefaultRouter()
-router.register(r'tasks', TaskViewSet, basename='task')
+router.register(r'', TaskViewSet, basename='task')
 
 schema_view = get_schema_view(
     openapi.Info(

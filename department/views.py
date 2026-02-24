@@ -1,7 +1,9 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status,permissions
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from .serializer import DepartmentSerializer
+from users.serializer import UserSerializer
+
 from .models import Department
 from .services.department_services import Department_services
 
@@ -10,13 +12,14 @@ from .services.department_services import Department_services
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all() 
     serializer_class = DepartmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
-        result = Department_services.createDepartment(request.data)
-        if result["success"]:
-            return Response(result, status=status.HTTP_201_CREATED)
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        serializer = DepartmentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=201)
+
 
     def update(self, request, pk=None, *args, **kwargs):
         result = Department_services.updateDepartment(pk, request.data)
@@ -36,6 +39,16 @@ class DepartmentViewSet(viewsets.ModelViewSet):
             return Response(result, status=status.HTTP_200_OK)
         return Response(result, status=status.HTTP_404_NOT_FOUND)
 
+    
     def list(self, request, *args, **kwargs):
-        result = Department_services.filter_departments()
-        return Response(result, status=status.HTTP_200_OK)
+        filters = request.query_params.dict()
+        departments = Department_services.filter_departments(filters)
+        serializer = DepartmentSerializer(departments, many=True)
+        return Response(serializer.data)
+
+
+    def members(self, request, pk=None):
+        department = self.get_object()
+        users = department.members.all()  # assuming FK from User → Department
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)

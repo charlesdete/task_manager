@@ -8,3 +8,4 @@ class NotificationSerializer(serializers.ModelSerializer):
             'id','title','message','user','notification_type',
             'is_read', 'state','created_at'
         ]
+       

@@ -65,11 +65,8 @@ class Notification_services(ServiceBase):
        return {'success':True,'notifications':serializer, 'errors':None}
 
     @staticmethod
-    def filter_notifications(filters):
-       """
-        filters: dict of field lookups, e.g. {"status": "open"} or {"title__icontains": "API"}
-        """
-
-       notifications = ServiceBase.filter(**filters)
-       serializer = NotificationSerializer(notifications, many= True).data
-       return {'success':True,'notifications':serializer, 'errors':None}
+    def filter_notifications(filters=None):
+        if filters is None:
+            filters = {}
+        # apply filters or return all notifications
+        return Notification.objects.filter(**filters)
