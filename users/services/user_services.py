@@ -4,6 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from base.services import ServiceBase
 from ..models import User
 from rest_framework.response import Response
+from rest_framework import status
 from tokens.services.token_services import TokenServices
 from django.utils import timezone
 
@@ -41,6 +42,45 @@ class UserService(ServiceBase):
             },
         }
     
+
+    @staticmethod
+    def signin(self, request):
+
+            result = UserService.signin_user(request.data, request)
+
+            if not result["success"]:
+                return Response(result["errors"], status=status.HTTP_401_UNAUTHORIZED)
+
+            data = result["data"]
+
+            response = Response(
+                {
+                    "user": data["user"],
+                },
+                status=status.HTTP_200_OK,
+            )
+
+            # Access token cookie
+            response.set_cookie(
+                key="access_token",
+                value=data["access"],
+                httponly=False,
+                secure=False,
+                samesite="Lax",
+                path="/",
+            )
+
+            # Refresh token cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=data["refresh"],
+                httponly=True,
+                secure=False,
+                samesite="Lax",
+                path="/",
+            )
+
+            return response
     
     @staticmethod
     def token_refresh_logic(refresh_token_str):

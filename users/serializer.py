@@ -40,13 +40,20 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         user = authenticate(
             request=self.context.get("request"),
-            username=email,   # IMPORTANT
+            username=email,
             password=password
         )
 
         if user is None:
             raise serializers.ValidationError("Invalid email or password")
 
-        return super().validate(attrs)
+        #  Don't call super().validate() — build the token response yourself
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
 
 

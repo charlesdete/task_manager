@@ -1,72 +1,80 @@
 from base.services import ServiceBase
 from ..models import Notification
 from ..serializer import NotificationSerializer
+from django.core.mail import send_mail
+from django.conf import settings
+from users.models import User
+
 
 
 class Notification_services(ServiceBase):
-    
     manager = Notification.objects
+
     @staticmethod
     def createNotification(data):
-        serializer = NotificationSerializer(data = data)
+        serializer = NotificationSerializer(data=data)
         if serializer.is_valid():
-          new_created_notification = ServiceBase.create(**serializer)
-          notification = new_created_notification.save()
-          return{'success':True, 'notification':notification, 'error':None }
-        return{'success':False, 'notification':None, 'error':serializer.errors}
+            notification = serializer.save()
 
+             #  Send email to the assigned user
+            try:
+                user = User.objects.get(pk=notification.user_id)
+                send_mail(
+                    subject=notification.title,
+                    message=notification.message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email_address],
+                    fail_silently=False,
+                )
+
+                print(f"Email sent to {user.email_address} for notification {notification.id}")
+            except User.DoesNotExist:
+                pass
+            except Exception as e:
+                print(f"Email sending failed: {e}")
+
+
+            return {"success": True, "notification": NotificationSerializer(notification).data, "error": None}
+        return {"success": False, "notification": None, "error": serializer.errors}
 
     @staticmethod
-    def updateNotification(notification_id,data):
+    def updateNotification(notification_id, data):
         try:
-          notification = ServiceBase.get(pk= notification_id)
+            notification = Notification.objects.get(pk=notification_id)
         except Notification.DoesNotExist:
-          return{'success': False, 'getData':None,'error':{'details': 'Notification not found'} }
+            return {"success": False, "notification": None, "error": {"detail": "Notification not found"}}
 
-        updateData = NotificationSerializer(notification, data = data, partial = True) #partial = True allows partial updates
-        
-        if updateData.is_valid():
+        serializer = NotificationSerializer(notification, data=data, partial=True)
+        if serializer.is_valid():
+            updated = serializer.save()
+            return {"success": True, "notification": NotificationSerializer(updated).data, "error": None}
+        return {"success": False, "notification": None, "error": serializer.errors}
 
-          new_updated = ServiceBase.update(updateData)
-          new_updated.save()
-        
-          return{'success': True, 'new_updated':NotificationSerializer(new_updated).data, 'error':None}
-        return{'success':False, 'savedUpdate':None, 'error':updateData.errors}
-    
     @staticmethod
     def deleteNotification(notification_id):
-       try:  
-             
-            notification = ServiceBase.delete(pk= notification_id)
-            serialized_notification = NotificationSerializer(notification).data
-            return{'success':False, 'deleted_notification':serialized_notification,'error':{'details':'Notification does not exist'}}
-       except Notification.DoesNotExist:
-        
-            return {
-                "success": False,
-                "deleted_notification": None,
-                "errors": {"detail": "Notification does not exist"}
-            }
+        try:
+            notification = Notification.objects.get(pk=notification_id)
+            notification.delete()
+            return {"success": True, "notification_id": str(notification_id), "error": None}
+        except Notification.DoesNotExist:
+            return {"success": False, "notification_id": None, "error": {"detail": "Notification does not exist"}}
 
-    
     @staticmethod
     def getNotification(notification_id):
-       try:
-            notification = ServiceBase.get(pk =notification_id)
-            serializer = NotificationSerializer(notification).data
-            return{'success':True, 'serializer':serializer,'error':None}
-       except Notification.DoesNotExist:
-          return {'success':False,'serializer':None,'error': {'detail':'Notification not found'}}
-       
+        try:
+            notification = Notification.objects.get(pk=notification_id)
+            return {"success": True, "notification": NotificationSerializer(notification).data, "error": None}
+        except Notification.DoesNotExist:
+            return {"success": False, "notification": None, "error": {"detail": "Notification not found"}}
+
     @staticmethod
-    def get_all_notification():
-       notifications =Notification.objects.all()
-       serializer = NotificationSerializer(notifications, many=True).data
-       return {'success':True,'notifications':serializer, 'errors':None}
+    def get_all_notifications():
+        notifications = Notification.objects.all()
+        return {"success": True, "notifications": NotificationSerializer(notifications, many=True).data, "error": None}
 
     @staticmethod
     def filter_notifications(filters=None):
         if filters is None:
             filters = {}
-        # apply filters or return all notifications
-        return Notification.objects.filter(**filters)
+        notifications = Notification.objects.filter(**filters)
+        return {"success": True, "notifications": NotificationSerializer(notifications, many=True).data, "error": None}

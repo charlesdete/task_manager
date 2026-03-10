@@ -78,6 +78,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        print("REQUEST DATA:", request.data)  # ← add this
         response = super().post(request, *args, **kwargs)
         data = response.data
         access = data.get("access")

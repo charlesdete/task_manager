@@ -28,10 +28,10 @@ SECRET_KEY = os.environ.get(
 
  
 DEBUG = bool(os.environ.get("DEBUG", default=0))
- 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS","127.0.0.1").split(",")
-
-
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS",
+    "127.0.0.1,localhost"  # ← add localhost
+).split(",")
 
 # -------------------------------------------------------------------
 # Applications
@@ -98,8 +98,9 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-     "http://127.0.0.1:8080",
    # your Vite dev server
+    "http://127.0.0.1:8080",
+
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -110,6 +111,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_HTTP_ONLY = True
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = False
 
@@ -212,12 +214,10 @@ DATABASES = {
     }
 }
 # if you want test emails
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# this is for real emails
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "charlesdete52@gmail.com"
-EMAIL_HOST_PASSWORD = "charlestete52"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # ← use Gmail App Password
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER")

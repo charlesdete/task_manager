@@ -11,20 +11,32 @@ class Notification(GenericBaseModel):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="notifications"
+        related_name="notifications",
+        blank=True,
+        null=True
     )
 
     title = models.CharField(max_length=255)
     message = models.CharField(max_length=255)
 
-    notification_type = models.ForeignKey(State, on_delete=models.CASCADE,blank=True
+    NOTIFICATION_TYPE_CHOICES = [
+        ("info", "Info"),
+        ("warning", "Warning"),
+        ("success", "Success"),
+        ("error", "Error"),
+    ]
+    notification_type = models.CharField( 
+        max_length=20,
+        choices=NOTIFICATION_TYPE_CHOICES,
+        default="info"
     )
 
     state = models.ForeignKey(
         State,
         on_delete=models.CASCADE,
         related_name="notifications_state",
-        blank=True
+        blank=True,
+        null=True
     )
 
     is_read = models.BooleanField(default=False)
